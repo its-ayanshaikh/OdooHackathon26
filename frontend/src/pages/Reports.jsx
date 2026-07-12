@@ -12,7 +12,7 @@ import {
   Legend,
 } from 'recharts'
 import { useApp } from '../store/AppContext.jsx'
-import { Panel, PanelHeader, PageHeader, Button, StatGrid, Stat } from '../components/ui.jsx'
+import { Panel, PanelHeader, PageHeader, Button, StatGrid, Stat, ResponsiveTable } from '../components/ui.jsx'
 import { Download, Gauge, TrendingUp, Wallet, PiggyBank } from 'lucide-react'
 import {
   computeKpis,
@@ -150,45 +150,39 @@ function Reports() {
         </div>
       </Panel>
 
-      <Panel className="mt-5 overflow-x-auto">
-        <PanelHeader title="Detailed Fleet Report" />
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500 dark:border-slate-800">
-            <tr>
-              <th className="px-4 py-3">Vehicle</th>
-              <th className="px-4 py-3">Efficiency</th>
-              <th className="px-4 py-3">Fuel</th>
-              <th className="px-4 py-3">Maintenance</th>
-              <th className="px-4 py-3">Operational</th>
-              <th className="px-4 py-3">Revenue</th>
-              <th className="px-4 py-3">ROI</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-            {report.map((r) => (
-              <tr key={r.vehicle.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                <td className="px-4 py-3 font-medium">{r.vehicle.regNumber}</td>
-                <td className="px-4 py-3">{r.efficiency ? `${r.efficiency} km/L` : '—'}</td>
-                <td className="px-4 py-3">{inr(r.fuel)}</td>
-                <td className="px-4 py-3">{inr(r.maintenance)}</td>
-                <td className="px-4 py-3">{inr(r.operational)}</td>
-                <td className="px-4 py-3">{inr(r.revenue)}</td>
-                <td className="px-4 py-3">
-                  <span
-                    className={
-                      r.roi >= 0
-                        ? 'font-medium text-emerald-600 dark:text-emerald-400'
-                        : 'font-medium text-red-600 dark:text-red-400'
-                    }
-                  >
-                    {r.roi}%
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </Panel>
+      <div className="mt-5">
+        <h3 className="mb-2 text-sm font-semibold text-slate-800 dark:text-slate-100">
+          Detailed Fleet Report
+        </h3>
+        <ResponsiveTable
+          rows={report}
+          rowKey={(r) => r.vehicle.id}
+          empty="No vehicles."
+          columns={[
+            { header: 'Vehicle', primary: true, cell: (r) => r.vehicle.regNumber },
+            {
+              header: 'ROI',
+              headerRight: true,
+              cell: (r) => (
+                <span
+                  className={
+                    r.roi >= 0
+                      ? 'font-semibold text-emerald-600 dark:text-emerald-400'
+                      : 'font-semibold text-red-600 dark:text-red-400'
+                  }
+                >
+                  {r.roi}%
+                </span>
+              ),
+            },
+            { header: 'Efficiency', cell: (r) => (r.efficiency ? `${r.efficiency} km/L` : '—') },
+            { header: 'Fuel', cell: (r) => inr(r.fuel) },
+            { header: 'Maintenance', cell: (r) => inr(r.maintenance) },
+            { header: 'Operational', cell: (r) => inr(r.operational) },
+            { header: 'Revenue', cell: (r) => inr(r.revenue) },
+          ]}
+        />
+      </div>
     </div>
   )
 }

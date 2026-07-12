@@ -11,6 +11,7 @@ import {
 import { useApp } from '../store/AppContext.jsx'
 import { NAV_ITEMS } from '../lib/navItems.js'
 import { ROLE_ACCESS } from '../lib/rbac.js'
+import { Logo, LogoMark } from '../components/Logo.jsx'
 
 function useTheme() {
   const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark')
@@ -69,16 +70,7 @@ function DashboardLayout() {
             collapsed ? 'justify-center' : 'justify-between'
           }`}
         >
-          {!collapsed && (
-            <div className="flex items-center gap-2">
-              <div className="grid h-8 w-8 place-items-center rounded-lg bg-amber-500 text-sm font-bold text-white">
-                T
-              </div>
-              <span className="text-base font-semibold tracking-tight">
-                TransitOps
-              </span>
-            </div>
-          )}
+          {collapsed ? <LogoMark size={30} /> : <Logo size={30} />}
           <button
             onClick={toggleCollapse}
             className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800"
@@ -125,12 +117,7 @@ function DashboardLayout() {
         {/* Top bar */}
         <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-slate-200 bg-white/80 px-4 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/80 sm:px-6">
           {/* Mobile brand */}
-          <div className="flex items-center gap-2 md:hidden">
-            <div className="grid h-8 w-8 place-items-center rounded-lg bg-amber-500 text-sm font-bold text-white">
-              T
-            </div>
-            <span className="text-base font-semibold">TransitOps</span>
-          </div>
+          <Logo size={30} className="md:hidden" />
           {/* Desktop role label */}
           <div className="hidden md:block">
             <p className="text-xs font-medium uppercase tracking-wide text-slate-400">

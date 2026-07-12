@@ -4,17 +4,24 @@ import { useToast } from '../components/Toast.jsx'
 import {
   Badge,
   Button,
-  Panel,
   Field,
   Input,
   Modal,
   PageHeader,
   Select,
-  EmptyRow,
   FilterBar,
   FilterSelect,
+  ResponsiveTable,
 } from '../components/ui.jsx'
-import { Plus, Send, CircleCheck, Ban, Trash2, TriangleAlert } from 'lucide-react'
+import {
+  Plus,
+  Send,
+  CircleCheck,
+  Ban,
+  Trash2,
+  TriangleAlert,
+  Route as RouteIcon,
+} from 'lucide-react'
 import { TRIP_STATUS } from '../data/seed.js'
 import {
   dispatchableVehicles,
@@ -175,77 +182,64 @@ function Trips() {
         </FilterSelect>
       </FilterBar>
 
-      <Panel className="overflow-x-auto">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500 dark:border-slate-800">
-            <tr>
-              <th className="px-4 py-3">Route</th>
-              <th className="px-4 py-3">Vehicle</th>
-              <th className="px-4 py-3">Driver</th>
-              <th className="px-4 py-3">Cargo</th>
-              <th className="px-4 py-3">Distance</th>
-              <th className="px-4 py-3">Revenue</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-            {rows.length === 0 ? (
-              <EmptyRow colSpan={8} message="No trips yet. Create one to get started." />
-            ) : (
-              rows.map((t) => {
-                const vehicle = getVehicle(state.vehicles, t.vehicleId)
-                const driver = getDriver(state.drivers, t.driverId)
-                return (
-                  <tr key={t.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                    <td className="px-4 py-3">
-                      <div className="font-medium">
-                        {t.source} → {t.destination}
-                      </div>
-                      <div className="text-xs text-slate-400">{t.createdAt}</div>
-                    </td>
-                    <td className="px-4 py-3">{vehicle?.regNumber || '—'}</td>
-                    <td className="px-4 py-3">{driver?.name || '—'}</td>
-                    <td className="px-4 py-3">{num(t.cargoWeight)} kg</td>
-                    <td className="px-4 py-3">{num(t.plannedDistance)} km</td>
-                    <td className="px-4 py-3">{inr(t.revenue)}</td>
-                    <td className="px-4 py-3">
-                      <Badge status={t.status} />
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex justify-end gap-1">
-                        {t.status === 'Draft' && (
-                          <>
-                            <Button icon={Send} onClick={() => doDispatch(t)}>
-                              Dispatch
-                            </Button>
-                            <Button variant="ghost" onClick={() => doDelete(t)} title="Delete">
-                              <Trash2 size={16} />
-                            </Button>
-                          </>
-                        )}
-                        {t.status === 'Dispatched' && (
-                          <>
-                            <Button icon={CircleCheck} onClick={() => openComplete(t)}>
-                              Complete
-                            </Button>
-                            <Button variant="ghost" onClick={() => doCancel(t)} title="Cancel">
-                              <Ban size={16} />
-                            </Button>
-                          </>
-                        )}
-                        {(t.status === 'Completed' || t.status === 'Cancelled') && (
-                          <span className="px-2 text-xs text-slate-400">—</span>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                )
-              })
+      <ResponsiveTable
+        rows={rows}
+        rowKey={(t) => t.id}
+        empty="No trips yet. Create one to get started."
+        emptyIcon={RouteIcon}
+        columns={[
+          {
+            header: 'Route',
+            primary: true,
+            cell: (t) => (
+              <span>
+                {t.source} → {t.destination}
+              </span>
+            ),
+          },
+          { header: 'Created', cell: (t) => t.createdAt },
+          { header: 'Status', headerRight: true, cell: (t) => <Badge status={t.status} /> },
+          {
+            header: 'Vehicle',
+            secondary: true,
+            cell: (t) => getVehicle(state.vehicles, t.vehicleId)?.regNumber || '—',
+          },
+          {
+            header: 'Driver',
+            cell: (t) => getDriver(state.drivers, t.driverId)?.name || '—',
+          },
+          { header: 'Cargo', cell: (t) => `${num(t.cargoWeight)} kg` },
+          { header: 'Distance', cell: (t) => `${num(t.plannedDistance)} km` },
+          { header: 'Revenue', cell: (t) => inr(t.revenue) },
+        ]}
+        actions={(t) => (
+          <>
+            {t.status === 'Draft' && (
+              <>
+                <Button icon={Send} onClick={() => doDispatch(t)}>
+                  Dispatch
+                </Button>
+                <Button variant="ghost" onClick={() => doDelete(t)} title="Delete">
+                  <Trash2 size={16} />
+                </Button>
+              </>
             )}
-          </tbody>
-        </table>
-      </Panel>
+            {t.status === 'Dispatched' && (
+              <>
+                <Button icon={CircleCheck} onClick={() => openComplete(t)}>
+                  Complete
+                </Button>
+                <Button variant="ghost" onClick={() => doCancel(t)} title="Cancel">
+                  <Ban size={16} />
+                </Button>
+              </>
+            )}
+            {(t.status === 'Completed' || t.status === 'Cancelled') && (
+              <span className="px-2 text-xs text-slate-400">No actions</span>
+            )}
+          </>
+        )}
+      />
 
       {/* Create trip modal */}
       <Modal

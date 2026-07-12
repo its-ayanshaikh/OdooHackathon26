@@ -2,6 +2,15 @@
 // Each role maps to the set of route paths it can access.
 
 export const ROLE_ACCESS = {
+  Admin: [
+    '/dashboard',
+    '/vehicles',
+    '/drivers',
+    '/trips',
+    '/maintenance',
+    '/expenses',
+    '/reports',
+  ],
   'Fleet Manager': ['/dashboard', '/vehicles', '/trips', '/maintenance', '/reports'],
   Driver: ['/dashboard', '/trips'],
   'Safety Officer': ['/dashboard', '/drivers'],

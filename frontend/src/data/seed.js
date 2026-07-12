@@ -64,6 +64,7 @@ export const seedExpenses = [
 ]
 
 export const seedUsers = [
+  { id: 'u0', name: 'Riya Kapoor', email: 'admin@transitops.com', role: 'Admin' },
   { id: 'u1', name: 'Priya Menon', email: 'fleet@transitops.com', role: 'Fleet Manager' },
   { id: 'u2', name: 'Arjun Rao', email: 'driver@transitops.com', role: 'Driver' },
   { id: 'u3', name: 'Neha Gupta', email: 'safety@transitops.com', role: 'Safety Officer' },
@@ -71,6 +72,7 @@ export const seedUsers = [
 ]
 
 export const ROLES = [
+  'Admin',
   'Fleet Manager',
   'Driver',
   'Safety Officer',

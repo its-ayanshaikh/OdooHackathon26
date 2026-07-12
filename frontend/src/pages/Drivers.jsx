@@ -4,18 +4,17 @@ import { useToast } from '../components/Toast.jsx'
 import {
   Badge,
   Button,
-  Panel,
   Field,
   Input,
   Modal,
   PageHeader,
   Select,
-  EmptyRow,
   FilterBar,
   FilterSelect,
   SearchInput,
+  ResponsiveTable,
 } from '../components/ui.jsx'
-import { Plus, Download, Search, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Download, Search, Pencil, Trash2, Users } from 'lucide-react'
 import { DRIVER_STATUS, LICENSE_CATEGORIES } from '../data/seed.js'
 import { isLicenseExpired, daysUntilExpiry } from '../store/selectors.js'
 import { exportToCsv } from '../utils/csv.js'
@@ -153,69 +152,49 @@ function Drivers() {
         </FilterSelect>
       </FilterBar>
 
-      <Panel className="overflow-x-auto">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500 dark:border-slate-800">
-            <tr>
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">License</th>
-              <th className="px-4 py-3">Category</th>
-              <th className="px-4 py-3">Expiry</th>
-              <th className="px-4 py-3">Safety</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-            {rows.length === 0 ? (
-              <EmptyRow colSpan={7} message="No drivers match your filters." />
-            ) : (
-              rows.map((d) => {
-                const expired = isLicenseExpired(d)
-                const days = daysUntilExpiry(d)
-                return (
-                  <tr key={d.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                    <td className="px-4 py-3">
-                      <div className="font-medium">{d.name}</div>
-                      <div className="text-xs text-slate-400">{d.contact}</div>
-                    </td>
-                    <td className="px-4 py-3">{d.licenseNumber}</td>
-                    <td className="px-4 py-3">{d.licenseCategory}</td>
-                    <td className="px-4 py-3">
-                      <div>{d.licenseExpiry}</div>
-                      {expired ? (
-                        <span className="text-xs font-medium text-red-500">
-                          Expired
-                        </span>
-                      ) : days <= 60 ? (
-                        <span className="text-xs font-medium text-amber-500">
-                          {days} days left
-                        </span>
-                      ) : null}
-                    </td>
-                    <td className="px-4 py-3">
-                      <ScoreBar score={d.safetyScore} />
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge status={d.status} />
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex justify-end gap-1">
-                        <Button variant="ghost" onClick={() => openEdit(d)} title="Edit">
-                          <Pencil size={16} />
-                        </Button>
-                        <Button variant="ghost" onClick={() => remove(d)} title="Delete">
-                          <Trash2 size={16} />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                )
-              })
-            )}
-          </tbody>
-        </table>
-      </Panel>
+      <ResponsiveTable
+        rows={rows}
+        rowKey={(d) => d.id}
+        empty="No drivers match your filters."
+        emptyIcon={Users}
+        columns={[
+          { header: 'Name', primary: true, cell: (d) => d.name },
+          { header: 'Status', headerRight: true, cell: (d) => <Badge status={d.status} /> },
+          { header: 'License', secondary: true, cell: (d) => d.licenseNumber },
+          { header: 'Contact', cell: (d) => d.contact },
+          { header: 'Category', cell: (d) => d.licenseCategory },
+          {
+            header: 'Expiry',
+            cell: (d) => {
+              const expired = isLicenseExpired(d)
+              const days = daysUntilExpiry(d)
+              return (
+                <div>
+                  <div>{d.licenseExpiry}</div>
+                  {expired ? (
+                    <span className="text-xs font-medium text-red-500">Expired</span>
+                  ) : days <= 60 ? (
+                    <span className="text-xs font-medium text-amber-500">
+                      {days} days left
+                    </span>
+                  ) : null}
+                </div>
+              )
+            },
+          },
+          { header: 'Safety', cell: (d) => <ScoreBar score={d.safetyScore} /> },
+        ]}
+        actions={(d) => (
+          <>
+            <Button variant="ghost" onClick={() => openEdit(d)} title="Edit">
+              <Pencil size={16} />
+            </Button>
+            <Button variant="ghost" onClick={() => remove(d)} title="Delete">
+              <Trash2 size={16} />
+            </Button>
+          </>
+        )}
+      />
 
       <Modal
         open={modalOpen}

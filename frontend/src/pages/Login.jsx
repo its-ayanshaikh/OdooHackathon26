@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../store/AppContext.jsx'
 import { useToast } from '../components/Toast.jsx'
+import { LogoMark } from '../components/Logo.jsx'
 
 function Login() {
   const navigate = useNavigate()
@@ -32,11 +33,11 @@ function Login() {
       <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-slate-900 p-12 text-white lg:flex">
         <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-amber-500/20 blur-3xl" />
         <div className="absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-blue-500/20 blur-3xl" />
-        <div className="relative flex items-center gap-2">
-          <div className="grid h-9 w-9 place-items-center rounded-lg bg-amber-500 font-bold">
-            T
-          </div>
-          <span className="text-xl font-semibold">TransitOps</span>
+        <div className="relative flex items-center gap-2.5">
+          <LogoMark size={36} />
+          <span className="text-xl font-semibold text-white">
+            Transit<span className="text-amber-400">Ops</span>
+          </span>
         </div>
         <div className="relative">
           <h2 className="text-4xl font-semibold leading-tight">
@@ -70,6 +71,13 @@ function Login() {
       {/* Form */}
       <div className="flex w-full items-center justify-center bg-slate-50 p-8 dark:bg-slate-950 lg:w-1/2">
         <div className="w-full max-w-sm">
+          {/* Mobile brand (dark panel is hidden on small screens) */}
+          <div className="mb-6 flex items-center justify-center gap-2.5 lg:hidden">
+            <LogoMark size={34} />
+            <span className="text-xl font-semibold text-slate-900 dark:text-white">
+              Transit<span className="text-amber-500">Ops</span>
+            </span>
+          </div>
           <form
             onSubmit={handleSubmit}
             className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900"

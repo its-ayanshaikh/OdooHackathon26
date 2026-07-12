@@ -4,18 +4,17 @@ import { useToast } from '../components/Toast.jsx'
 import {
   Badge,
   Button,
-  Panel,
   Field,
   Input,
   Modal,
   PageHeader,
   Select,
-  EmptyRow,
   FilterBar,
   FilterSelect,
   SearchInput,
+  ResponsiveTable,
 } from '../components/ui.jsx'
-import { Plus, Download, Search, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Download, Search, Pencil, Trash2, Truck } from 'lucide-react'
 import { VEHICLE_TYPES, REGIONS, VEHICLE_STATUS } from '../data/seed.js'
 import { num } from '../utils/format.js'
 import { exportToCsv } from '../utils/csv.js'
@@ -171,51 +170,31 @@ function Vehicles() {
         </FilterSelect>
       </FilterBar>
 
-      <Panel className="overflow-x-auto">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500 dark:border-slate-800">
-            <tr>
-              <th className="px-4 py-3">Registration</th>
-              <th className="px-4 py-3">Model</th>
-              <th className="px-4 py-3">Type</th>
-              <th className="px-4 py-3">Capacity</th>
-              <th className="px-4 py-3">Odometer</th>
-              <th className="px-4 py-3">Region</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-            {rows.length === 0 ? (
-              <EmptyRow colSpan={8} message="No vehicles match your filters." />
-            ) : (
-              rows.map((v) => (
-                <tr key={v.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                  <td className="px-4 py-3 font-medium">{v.regNumber}</td>
-                  <td className="px-4 py-3">{v.name}</td>
-                  <td className="px-4 py-3">{v.type}</td>
-                  <td className="px-4 py-3">{num(v.maxCapacity)} kg</td>
-                  <td className="px-4 py-3">{num(v.odometer)} km</td>
-                  <td className="px-4 py-3">{v.region}</td>
-                  <td className="px-4 py-3">
-                    <Badge status={v.status} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex justify-end gap-1">
-                      <Button variant="ghost" onClick={() => openEdit(v)} title="Edit">
-                        <Pencil size={16} />
-                      </Button>
-                      <Button variant="ghost" onClick={() => remove(v)} title="Delete">
-                        <Trash2 size={16} />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </Panel>
+      <ResponsiveTable
+        rows={rows}
+        rowKey={(v) => v.id}
+        empty="No vehicles match your filters."
+        emptyIcon={Truck}
+        columns={[
+          { header: 'Registration', primary: true, cell: (v) => v.regNumber },
+          { header: 'Status', headerRight: true, cell: (v) => <Badge status={v.status} /> },
+          { header: 'Model', secondary: true, cell: (v) => v.name },
+          { header: 'Type', cell: (v) => v.type },
+          { header: 'Capacity', cell: (v) => `${num(v.maxCapacity)} kg` },
+          { header: 'Odometer', cell: (v) => `${num(v.odometer)} km` },
+          { header: 'Region', cell: (v) => v.region },
+        ]}
+        actions={(v) => (
+          <>
+            <Button variant="ghost" onClick={() => openEdit(v)} title="Edit">
+              <Pencil size={16} />
+            </Button>
+            <Button variant="ghost" onClick={() => remove(v)} title="Delete">
+              <Trash2 size={16} />
+            </Button>
+          </>
+        )}
+      />
 
       <Modal
         open={modalOpen}
