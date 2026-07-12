@@ -6,6 +6,7 @@ import {
   Wrench,
   Fuel,
   BarChart3,
+  Settings,
 } from 'lucide-react'
 
 export const NAV_ITEMS = [
@@ -16,4 +17,5 @@ export const NAV_ITEMS = [
   { to: '/maintenance', label: 'Maintenance', icon: Wrench },
   { to: '/expenses', label: 'Fuel & Expenses', icon: Fuel },
   { to: '/reports', label: 'Reports', icon: BarChart3 },
+  { to: '/settings', label: 'Settings', icon: Settings },
 ]

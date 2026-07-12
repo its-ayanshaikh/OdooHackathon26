@@ -16,6 +16,7 @@ class Driver(models.Model):
         PSV = 'PSV', 'PSV'
 
     name = models.CharField(max_length=120)
+    email = models.EmailField(blank=True)
     license_number = models.CharField(max_length=40, unique=True)
     license_category = models.CharField(max_length=8, choices=License.choices, default=License.LMV)
     license_expiry = models.DateField()

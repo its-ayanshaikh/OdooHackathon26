@@ -12,6 +12,7 @@ import { useAuth } from '../store/AuthContext.jsx'
 import { NAV_ITEMS } from '../lib/navItems.js'
 import { ROLE_ACCESS } from '../lib/rbac.js'
 import { Logo, LogoMark } from '../components/Logo.jsx'
+import ForcePasswordChange from '../components/ForcePasswordChange.jsx'
 
 function useTheme() {
   const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark')
@@ -211,6 +212,9 @@ function DashboardLayout() {
           ))}
         </div>
       </nav>
+
+      {/* Mandatory first-login password change */}
+      <ForcePasswordChange />
     </div>
   )
 }

@@ -47,6 +47,8 @@ class User(AbstractUser):
     role = models.CharField(
         max_length=32, choices=Role.choices, default=Role.DRIVER
     )
+    # True until the user changes the initial (auto-generated) password.
+    first_time_login = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

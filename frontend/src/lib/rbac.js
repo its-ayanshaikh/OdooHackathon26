@@ -10,11 +10,12 @@ export const ROLE_ACCESS = {
     '/maintenance',
     '/expenses',
     '/reports',
+    '/settings',
   ],
-  'Fleet Manager': ['/dashboard', '/vehicles', '/trips', '/maintenance', '/reports'],
-  Driver: ['/dashboard', '/trips'],
-  'Safety Officer': ['/dashboard', '/drivers'],
-  'Financial Analyst': ['/dashboard', '/expenses', '/reports'],
+  'Fleet Manager': ['/dashboard', '/vehicles', '/trips', '/maintenance', '/reports', '/settings'],
+  Driver: ['/dashboard', '/trips', '/settings'],
+  'Safety Officer': ['/dashboard', '/drivers', '/settings'],
+  'Financial Analyst': ['/dashboard', '/expenses', '/reports', '/settings'],
 }
 
 export function canAccess(role, path) {

@@ -37,8 +37,21 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
+  const changePassword = useCallback(async (oldPassword, newPassword) => {
+    await api.changePassword(oldPassword, newPassword)
+    // Refresh user so first_time_login flips to false.
+    try {
+      const data = await api.me()
+      setUser(data.user)
+    } catch {
+      setUser((u) => (u ? { ...u, first_time_login: false } : u))
+    }
+  }, [])
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider
+      value={{ user, loading, login, logout, changePassword }}
+    >
       {children}
     </AuthContext.Provider>
   )

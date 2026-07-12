@@ -21,6 +21,7 @@ import { exportToCsv } from '../utils/csv.js'
 
 const emptyDriver = {
   name: '',
+  email: '',
   licenseNumber: '',
   licenseCategory: 'LMV',
   licenseExpiry: '',
@@ -66,6 +67,8 @@ function Drivers() {
   const save = async (e) => {
     e.preventDefault()
     if (!form.name.trim()) return toast.error('Driver name is required.')
+    if (!form.email.trim()) return toast.error('Email is required to create a driver login.')
+    if (!form.contact.trim()) return toast.error('Contact number is required (initial password).')
     if (!form.licenseExpiry) return toast.error('License expiry date is required.')
 
     const payload = { ...form, safetyScore: Number(form.safetyScore) }
@@ -210,6 +213,20 @@ function Drivers() {
               />
             </Field>
           </div>
+          <div className="col-span-2">
+            <Field
+              label="Email"
+              hint="A login is created automatically — password is the contact number below (changed on first login)."
+            >
+              <Input
+                type="email"
+                value={form.email}
+                onChange={(e) => setField('email', e.target.value)}
+                placeholder="driver@company.com"
+                required
+              />
+            </Field>
+          </div>
           <Field label="License Number">
             <Input
               value={form.licenseNumber}
@@ -235,10 +252,11 @@ function Drivers() {
               required
             />
           </Field>
-          <Field label="Contact Number">
+          <Field label="Contact Number" hint="Used as the initial login password.">
             <Input
               value={form.contact}
               onChange={(e) => setField('contact', e.target.value)}
+              required
             />
           </Field>
           <Field label={`Safety Score: ${form.safetyScore}`}>

@@ -8,6 +8,7 @@ import Trips from './pages/Trips.jsx'
 import Maintenance from './pages/Maintenance.jsx'
 import Expenses from './pages/Expenses.jsx'
 import Reports from './pages/Reports.jsx'
+import Settings from './pages/Settings.jsx'
 import { useAuth } from './store/AuthContext.jsx'
 import { canAccess, landingRoute } from './lib/rbac.js'
 import { LogoMark } from './components/Logo.jsx'
@@ -105,6 +106,7 @@ function App() {
               </RoleRoute>
             }
           />
+          <Route path="/settings" element={<Settings />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
