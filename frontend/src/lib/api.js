@@ -68,4 +68,34 @@ export const api = {
     const res = await request('/auth/me/')
     return parse(res)
   },
+
+  async changePassword(oldPassword, newPassword) {
+    const res = await request('/auth/change-password/', {
+      method: 'POST',
+      body: { old_password: oldPassword, new_password: newPassword },
+    })
+    return parse(res)
+  },
+
+  // Admin only
+  async listUsers() {
+    const res = await request('/users/')
+    return parse(res)
+  },
+
+  async createUser({ email, name, role, password }) {
+    const res = await request('/users/', {
+      method: 'POST',
+      body: { email, name, role, password },
+    })
+    return parse(res)
+  },
+
+  async resetUserPassword(userId, newPassword, forceChange = true) {
+    const res = await request('/users/reset-password/', {
+      method: 'POST',
+      body: { user_id: userId, new_password: newPassword, force_change: forceChange },
+    })
+    return parse(res)
+  },
 }

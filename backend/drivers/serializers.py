@@ -10,6 +10,7 @@ class DriverSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'name',
+            'email',
             'license_number',
             'license_category',
             'license_expiry',
@@ -30,6 +31,18 @@ class DriverSerializer(serializers.ModelSerializer):
         if qs.exists():
             raise serializers.ValidationError('License number already exists.')
         return value
+
+    def validate_email(self, value):
+        # Email is required so the driver gets a login account.
+        if not (value or '').strip():
+            raise serializers.ValidationError('Email is required to create a driver login.')
+        return value.strip().lower()
+
+    def validate_contact(self, value):
+        # Contact is required and used as the driver's initial password.
+        if not (value or '').strip():
+            raise serializers.ValidationError('Contact number is required (used as initial password).')
+        return value.strip()
 
     def validate_safety_score(self, value):
         if value < 0 or value > 100:

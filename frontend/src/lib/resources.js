@@ -76,6 +76,7 @@ const vehicleToApi = (v) => ({
 const driverFromApi = (d) => ({
   id: d.id,
   name: d.name,
+  email: d.email,
   licenseNumber: d.license_number,
   licenseCategory: d.license_category,
   licenseExpiry: d.license_expiry,
@@ -86,6 +87,7 @@ const driverFromApi = (d) => ({
 })
 const driverToApi = (d) => ({
   name: d.name,
+  email: d.email,
   license_number: d.licenseNumber,
   license_category: d.licenseCategory,
   license_expiry: d.licenseExpiry,

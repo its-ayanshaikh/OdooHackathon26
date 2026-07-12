@@ -24,8 +24,34 @@ def driver_list(request):
 
     serializer = DriverSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    serializer.save()
+    driver = serializer.save()
+
+    # Auto-provision a login for the driver: email + password = contact number.
+    _provision_driver_user(driver)
+
     return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+def _provision_driver_user(driver):
+    """Create a Driver-role user account so the driver can log in."""
+    from common.models import User
+
+    email = (driver.email or '').strip().lower()
+    password = (driver.contact or '').strip()
+    if not email or not password:
+        return  # not enough info to create a login
+    if User.objects.filter(email__iexact=email).exists():
+        return  # don't clobber an existing account
+
+    user = User(
+        email=email,
+        name=driver.name,
+        role=User.Role.DRIVER,
+        first_time_login=True,
+        is_active=True,
+    )
+    user.set_password(password)
+    user.save()
 
 
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
