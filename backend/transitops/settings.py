@@ -42,6 +42,11 @@ INSTALLED_APPS = [
     'corsheaders',
     # Local
     'common',
+    'vehicles',
+    'drivers',
+    'trips',
+    'maintenance',
+    'expenses',
 ]
 
 MIDDLEWARE = [

@@ -42,7 +42,7 @@ const emptyTrip = {
 }
 
 function Trips() {
-  const { state, dispatch } = useApp()
+  const { state, addTrip, deleteTrip, dispatchTrip, completeTrip, cancelTrip } = useApp()
   const toast = useToast()
   const [statusFilter, setStatusFilter] = useState('all')
   const [modalOpen, setModalOpen] = useState(false)
@@ -70,7 +70,7 @@ function Trips() {
     setModalOpen(true)
   }
 
-  const create = (e) => {
+  const create = async (e) => {
     e.preventDefault()
     const { source, destination, vehicleId, driverId, cargoWeight } = form
     if (!source || !destination) return toast.error('Source and destination required.')
@@ -78,37 +78,35 @@ function Trips() {
     if (!driverId) return toast.error('Select an available driver.')
 
     const vehicle = getVehicle(state.vehicles, vehicleId)
-    if (Number(cargoWeight) > vehicle.maxCapacity)
+    if (vehicle && Number(cargoWeight) > vehicle.maxCapacity)
       return toast.error(
         `Cargo (${num(cargoWeight)} kg) exceeds capacity (${num(vehicle.maxCapacity)} kg).`,
       )
 
-    dispatch({
-      type: 'ADD_TRIP',
-      trip: {
-        ...form,
+    try {
+      await addTrip({
+        source,
+        destination,
+        vehicleId,
+        driverId,
         cargoWeight: Number(cargoWeight),
         plannedDistance: Number(form.plannedDistance),
         revenue: Number(form.revenue || 0),
-        createdAt: new Date().toISOString().slice(0, 10),
-        startOdometer: null,
-        endOdometer: null,
-        fuelConsumed: null,
-      },
-    })
-    toast.success('Trip created as Draft.')
-    setModalOpen(false)
+      })
+      toast.success('Trip created as Draft.')
+      setModalOpen(false)
+    } catch (err) {
+      toast.error(err.message)
+    }
   }
 
-  const doDispatch = (trip) => {
-    const vehicle = getVehicle(state.vehicles, trip.vehicleId)
-    const driver = getDriver(state.drivers, trip.driverId)
-    if (!vehicle || vehicle.status !== 'Available')
-      return toast.error('Vehicle is no longer available for dispatch.')
-    if (!driver || driver.status !== 'Available')
-      return toast.error('Driver is no longer available for dispatch.')
-    dispatch({ type: 'DISPATCH_TRIP', id: trip.id })
-    toast.success('Trip dispatched. Vehicle & driver set to On Trip.')
+  const doDispatch = async (trip) => {
+    try {
+      await dispatchTrip(trip.id)
+      toast.success('Trip dispatched. Vehicle & driver set to On Trip.')
+    } catch (err) {
+      toast.error(err.message)
+    }
   }
 
   const openComplete = (trip) => {
@@ -120,35 +118,37 @@ function Trips() {
     })
   }
 
-  const confirmComplete = (e) => {
+  const confirmComplete = async (e) => {
     e.preventDefault()
-    const end = Number(completeForm.endOdometer)
-    const vehicle = getVehicle(state.vehicles, completing.vehicleId)
-    if (end < vehicle.odometer)
-      return toast.error('Final odometer cannot be less than current reading.')
-    dispatch({
-      type: 'COMPLETE_TRIP',
-      id: completing.id,
-      payload: {
-        endOdometer: end,
+    try {
+      await completeTrip(completing.id, {
+        endOdometer: Number(completeForm.endOdometer),
         fuelConsumed: Number(completeForm.fuelConsumed),
-      },
-    })
-    toast.success('Trip completed. Vehicle & driver back to Available.')
-    setCompleting(null)
-  }
-
-  const doCancel = (trip) => {
-    if (window.confirm('Cancel this trip?')) {
-      dispatch({ type: 'CANCEL_TRIP', id: trip.id })
-      toast.info('Trip cancelled.')
+      })
+      toast.success('Trip completed. Vehicle & driver back to Available.')
+      setCompleting(null)
+    } catch (err) {
+      toast.error(err.message)
     }
   }
 
-  const doDelete = (trip) => {
-    if (window.confirm('Delete this draft trip?')) {
-      dispatch({ type: 'DELETE_TRIP', id: trip.id })
+  const doCancel = async (trip) => {
+    if (!window.confirm('Cancel this trip?')) return
+    try {
+      await cancelTrip(trip.id)
+      toast.info('Trip cancelled.')
+    } catch (err) {
+      toast.error(err.message)
+    }
+  }
+
+  const doDelete = async (trip) => {
+    if (!window.confirm('Delete this draft trip?')) return
+    try {
+      await deleteTrip(trip.id)
       toast.info('Trip deleted.')
+    } catch (err) {
+      toast.error(err.message)
     }
   }
 

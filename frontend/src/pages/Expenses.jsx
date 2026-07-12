@@ -19,7 +19,7 @@ import { inr } from '../utils/format.js'
 import { exportToCsv } from '../utils/csv.js'
 
 function Expenses() {
-  const { state, dispatch } = useApp()
+  const { state, addFuel, deleteFuel, addExpense, deleteExpense } = useApp()
   const toast = useToast()
   const [tab, setTab] = useState('fuel')
   const [fuelModal, setFuelModal] = useState(false)
@@ -40,33 +40,53 @@ function Expenses() {
     note: '',
   })
 
-  const addFuel = (e) => {
+  const handleAddFuel = async (e) => {
     e.preventDefault()
     if (!fuelForm.vehicleId) return toast.error('Select a vehicle.')
-    dispatch({
-      type: 'ADD_FUEL',
-      log: {
+    try {
+      await addFuel({
         ...fuelForm,
         liters: Number(fuelForm.liters),
         cost: Number(fuelForm.cost),
         odometer: Number(fuelForm.odometer),
-      },
-    })
-    toast.success('Fuel log added.')
-    setFuelModal(false)
-    setFuelForm((f) => ({ ...f, liters: '', cost: '', odometer: '' }))
+      })
+      toast.success('Fuel log added.')
+      setFuelModal(false)
+      setFuelForm((f) => ({ ...f, liters: '', cost: '', odometer: '' }))
+    } catch (err) {
+      toast.error(err.message)
+    }
   }
 
-  const addExpense = (e) => {
+  const handleAddExpense = async (e) => {
     e.preventDefault()
     if (!expForm.vehicleId) return toast.error('Select a vehicle.')
-    dispatch({
-      type: 'ADD_EXPENSE',
-      expense: { ...expForm, amount: Number(expForm.amount) },
-    })
-    toast.success('Expense added.')
-    setExpModal(false)
-    setExpForm((f) => ({ ...f, amount: '', note: '' }))
+    try {
+      await addExpense({ ...expForm, amount: Number(expForm.amount) })
+      toast.success('Expense added.')
+      setExpModal(false)
+      setExpForm((f) => ({ ...f, amount: '', note: '' }))
+    } catch (err) {
+      toast.error(err.message)
+    }
+  }
+
+  const removeFuel = async (id) => {
+    try {
+      await deleteFuel(id)
+      toast.info('Fuel log deleted.')
+    } catch (err) {
+      toast.error(err.message)
+    }
+  }
+
+  const removeExpense = async (id) => {
+    try {
+      await deleteExpense(id)
+      toast.info('Expense deleted.')
+    } catch (err) {
+      toast.error(err.message)
+    }
   }
 
   const costSummary = useMemo(
@@ -212,11 +232,7 @@ function Expenses() {
               { header: 'Date', cell: (f) => f.date },
             ]}
             actions={(f) => (
-              <Button
-                variant="ghost"
-                onClick={() => dispatch({ type: 'DELETE_FUEL', id: f.id })}
-                title="Delete"
-              >
+              <Button variant="ghost" onClick={() => removeFuel(f.id)} title="Delete">
                 <Trash2 size={16} />
               </Button>
             )}
@@ -264,11 +280,7 @@ function Expenses() {
               { header: 'Note', cell: (x) => x.note },
             ]}
             actions={(x) => (
-              <Button
-                variant="ghost"
-                onClick={() => dispatch({ type: 'DELETE_EXPENSE', id: x.id })}
-                title="Delete"
-              >
+              <Button variant="ghost" onClick={() => removeExpense(x.id)} title="Delete">
                 <Trash2 size={16} />
               </Button>
             )}
@@ -278,7 +290,7 @@ function Expenses() {
 
       {/* Fuel modal */}
       <Modal open={fuelModal} onClose={() => setFuelModal(false)} title="Add Fuel Log">
-        <form onSubmit={addFuel} className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleAddFuel} className="grid grid-cols-2 gap-4">
           <div className="col-span-2">
             <Field label="Vehicle">
               <Select
@@ -340,7 +352,7 @@ function Expenses() {
 
       {/* Expense modal */}
       <Modal open={expModal} onClose={() => setExpModal(false)} title="Add Expense">
-        <form onSubmit={addExpense} className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleAddExpense} className="grid grid-cols-2 gap-4">
           <div className="col-span-2">
             <Field label="Vehicle">
               <Select

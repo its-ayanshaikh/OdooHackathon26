@@ -10,7 +10,7 @@ import {
 
 export const NAV_ITEMS = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/vehicles', label: 'Vehicles', icon: Truck },
+  { to: '/vehicles', label: 'Fleet', icon: Truck },
   { to: '/drivers', label: 'Drivers', icon: Users },
   { to: '/trips', label: 'Trips', icon: Route },
   { to: '/maintenance', label: 'Maintenance', icon: Wrench },

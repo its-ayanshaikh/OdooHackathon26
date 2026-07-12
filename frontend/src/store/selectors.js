@@ -27,11 +27,11 @@ export function assignableDrivers(drivers) {
 }
 
 export function getVehicle(vehicles, id) {
-  return vehicles.find((v) => v.id === id)
+  return vehicles.find((v) => String(v.id) === String(id))
 }
 
 export function getDriver(drivers, id) {
-  return drivers.find((d) => d.id === id)
+  return drivers.find((d) => String(d.id) === String(id))
 }
 
 // ---------------- KPIs ----------------

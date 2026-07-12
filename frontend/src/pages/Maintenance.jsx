@@ -29,7 +29,7 @@ const MAINT_TYPES = [
 ]
 
 function Maintenance() {
-  const { state, dispatch } = useApp()
+  const { state, addMaintenance, closeMaintenance } = useApp()
   const toast = useToast()
   const [modalOpen, setModalOpen] = useState(false)
   const [statusFilter, setStatusFilter] = useState('all')
@@ -49,25 +49,30 @@ function Maintenance() {
     (v) => v.status === 'Available' || v.status === 'In Shop',
   )
 
-  const create = (e) => {
+  const create = async (e) => {
     e.preventDefault()
     if (!form.vehicleId) return toast.error('Select a vehicle.')
-    dispatch({
-      type: 'ADD_MAINTENANCE',
-      record: { ...form, cost: Number(form.cost) },
-    })
-    toast.success(
-      form.status === 'Active'
-        ? 'Maintenance logged. Vehicle set to In Shop.'
-        : 'Maintenance record added.',
-    )
-    setModalOpen(false)
-    setForm((f) => ({ ...f, description: '', cost: '' }))
+    try {
+      await addMaintenance({ ...form, cost: Number(form.cost) })
+      toast.success(
+        form.status === 'Active'
+          ? 'Maintenance logged. Vehicle set to In Shop.'
+          : 'Maintenance record added.',
+      )
+      setModalOpen(false)
+      setForm((f) => ({ ...f, description: '', cost: '' }))
+    } catch (err) {
+      toast.error(err.message)
+    }
   }
 
-  const close = (m) => {
-    dispatch({ type: 'CLOSE_MAINTENANCE', id: m.id })
-    toast.success('Maintenance closed. Vehicle restored to Available.')
+  const close = async (m) => {
+    try {
+      await closeMaintenance(m.id)
+      toast.success('Maintenance closed. Vehicle restored to Available.')
+    } catch (err) {
+      toast.error(err.message)
+    }
   }
 
   const rows = useMemo(

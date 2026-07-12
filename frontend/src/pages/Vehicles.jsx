@@ -31,7 +31,7 @@ const emptyVehicle = {
 }
 
 function Vehicles() {
-  const { state, dispatch } = useApp()
+  const { state, addVehicle, updateVehicle, deleteVehicle } = useApp()
   const toast = useToast()
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('all')
@@ -55,16 +55,10 @@ function Vehicles() {
 
   const setField = (k, v) => setForm((f) => ({ ...f, [k]: v }))
 
-  const save = (e) => {
+  const save = async (e) => {
     e.preventDefault()
     const reg = form.regNumber.trim()
     if (!reg) return toast.error('Registration number is required.')
-
-    // Unique registration number rule
-    const duplicate = state.vehicles.some(
-      (v) => v.regNumber.toLowerCase() === reg.toLowerCase() && v.id !== editing?.id,
-    )
-    if (duplicate) return toast.error('Registration number must be unique.')
 
     const payload = {
       ...form,
@@ -74,22 +68,27 @@ function Vehicles() {
       acquisitionCost: Number(form.acquisitionCost),
     }
 
-    if (editing) {
-      dispatch({ type: 'UPDATE_VEHICLE', vehicle: { ...payload, id: editing.id } })
-      toast.success('Vehicle updated.')
-    } else {
-      dispatch({ type: 'ADD_VEHICLE', vehicle: payload })
-      toast.success('Vehicle added.')
+    try {
+      if (editing) {
+        await updateVehicle(editing.id, payload)
+        toast.success('Vehicle updated.')
+      } else {
+        await addVehicle(payload)
+        toast.success('Vehicle added.')
+      }
+      setModalOpen(false)
+    } catch (err) {
+      toast.error(err.message)
     }
-    setModalOpen(false)
   }
 
-  const remove = (v) => {
-    if (v.status === 'On Trip')
-      return toast.error('Cannot delete a vehicle that is on a trip.')
-    if (window.confirm(`Delete vehicle ${v.regNumber}?`)) {
-      dispatch({ type: 'DELETE_VEHICLE', id: v.id })
+  const remove = async (v) => {
+    if (!window.confirm(`Delete vehicle ${v.regNumber}?`)) return
+    try {
+      await deleteVehicle(v.id)
       toast.info('Vehicle deleted.')
+    } catch (err) {
+      toast.error(err.message)
     }
   }
 
