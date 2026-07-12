@@ -3,15 +3,15 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../store/AuthContext.jsx'
 import { useToast } from '../components/Toast.jsx'
 import { LogoMark } from '../components/Logo.jsx'
-import { DEMO_ACCOUNTS, DEMO_PASSWORD } from '../lib/demoAccounts.js'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Eye, EyeOff } from 'lucide-react'
 
 function Login() {
   const navigate = useNavigate()
   const { login } = useAuth()
   const toast = useToast()
-  const [email, setEmail] = useState('admin@transitops.com')
-  const [password, setPassword] = useState(DEMO_PASSWORD)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [busy, setBusy] = useState(false)
 
   const doLogin = async (mail, pass) => {
@@ -57,15 +57,12 @@ function Login() {
           </p>
           <div className="mt-8 flex gap-8">
             <div>
-              <p className="text-3xl font-bold text-amber-400">8</p>
               <p className="text-sm text-slate-400">Vehicles</p>
             </div>
             <div>
-              <p className="text-3xl font-bold text-amber-400">7</p>
               <p className="text-sm text-slate-400">Drivers</p>
             </div>
             <div>
-              <p className="text-3xl font-bold text-amber-400">6</p>
               <p className="text-sm text-slate-400">Trips</p>
             </div>
           </div>
@@ -109,14 +106,24 @@ function Login() {
             <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
               Password
             </label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="mb-6 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/30 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-            />
+            <div className="relative mb-6">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 pr-10 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/30 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-slate-400 transition hover:text-slate-600 dark:hover:text-slate-200"
+                title={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
 
             <button
               type="submit"
@@ -127,27 +134,6 @@ function Login() {
               Sign in
             </button>
           </form>
-
-          <div className="mt-5">
-            <p className="mb-2 text-center text-xs uppercase tracking-wide text-slate-400">
-              Quick demo login (RBAC)
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              {DEMO_ACCOUNTS.map((u) => (
-                <button
-                  key={u.email}
-                  disabled={busy}
-                  onClick={() => doLogin(u.email, DEMO_PASSWORD)}
-                  className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-left text-xs transition hover:border-amber-400 hover:bg-amber-50 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800"
-                >
-                  <span className="block font-semibold text-slate-800 dark:text-slate-100">
-                    {u.role}
-                  </span>
-                  <span className="text-slate-400">{u.name}</span>
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
     </div>
