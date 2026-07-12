@@ -3,16 +3,14 @@ import { useApp } from '../store/AppContext.jsx'
 import { useToast } from '../components/Toast.jsx'
 import {
   Button,
-  Panel,
-  PanelHeader,
   Field,
   Input,
   Modal,
   PageHeader,
   Select,
-  EmptyRow,
   StatGrid,
   Stat,
+  ResponsiveTable,
 } from '../components/ui.jsx'
 import { Plus, Download, Trash2, Fuel, Wrench, Receipt } from 'lucide-react'
 import { EXPENSE_CATEGORIES } from '../data/seed.js'
@@ -126,31 +124,31 @@ function Expenses() {
       </div>
 
       {/* Operational cost per vehicle */}
-      <Panel className="mb-5 overflow-x-auto">
-        <PanelHeader title="Operational Cost per Vehicle" />
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500 dark:border-slate-800">
-            <tr>
-              <th className="px-4 py-3">Vehicle</th>
-              <th className="px-4 py-3">Fuel</th>
-              <th className="px-4 py-3">Maintenance</th>
-              <th className="px-4 py-3">Other</th>
-              <th className="px-4 py-3">Total Operational</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-            {costSummary.map((c) => (
-              <tr key={c.vehicle.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                <td className="px-4 py-3 font-medium">{c.vehicle.regNumber}</td>
-                <td className="px-4 py-3">{inr(c.fuel)}</td>
-                <td className="px-4 py-3">{inr(c.maintenance)}</td>
-                <td className="px-4 py-3">{inr(c.otherExpenses)}</td>
-                <td className="px-4 py-3 font-semibold">{inr(c.operational)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </Panel>
+      <div className="mb-5">
+        <h3 className="mb-2 text-sm font-semibold text-slate-800 dark:text-slate-100">
+          Operational Cost per Vehicle
+        </h3>
+        <ResponsiveTable
+          rows={costSummary}
+          rowKey={(c) => c.vehicle.id}
+          empty="No vehicles."
+          columns={[
+            { header: 'Vehicle', primary: true, cell: (c) => c.vehicle.regNumber },
+            { header: 'Fuel', cell: (c) => inr(c.fuel) },
+            { header: 'Maintenance', cell: (c) => inr(c.maintenance) },
+            { header: 'Other', cell: (c) => inr(c.otherExpenses) },
+            {
+              header: 'Total Operational',
+              headerRight: true,
+              cell: (c) => (
+                <span className="font-semibold text-slate-900 dark:text-white">
+                  {inr(c.operational)}
+                </span>
+              ),
+            },
+          ]}
+        />
+      </div>
 
       {/* Segmented control */}
       <div className="mb-4 inline-flex rounded-lg border border-slate-200 bg-slate-100 p-0.5 dark:border-slate-700 dark:bg-slate-800">
@@ -173,141 +171,109 @@ function Expenses() {
       </div>
 
       {tab === 'fuel' ? (
-        <Panel className="overflow-x-auto">
-          <PanelHeader
-            title="Fuel Logs"
-            action={
+        <div>
+          <div className="mb-2 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+              Fuel Logs
+            </h3>
+            <Button
+              variant="ghost"
+              icon={Download}
+              onClick={() =>
+                exportToCsv(
+                  'fuel-logs.csv',
+                  state.fuelLogs.map((f) => ({
+                    Vehicle: getVehicle(state.vehicles, f.vehicleId)?.regNumber,
+                    Liters: f.liters,
+                    Cost: f.cost,
+                    Odometer: f.odometer,
+                    Date: f.date,
+                  })),
+                )
+              }
+            >
+              Export
+            </Button>
+          </div>
+          <ResponsiveTable
+            rows={state.fuelLogs.slice().reverse()}
+            rowKey={(f) => f.id}
+            empty="No fuel logs."
+            emptyIcon={Fuel}
+            columns={[
+              {
+                header: 'Vehicle',
+                primary: true,
+                cell: (f) => getVehicle(state.vehicles, f.vehicleId)?.regNumber || '—',
+              },
+              { header: 'Liters', cell: (f) => `${f.liters} L` },
+              { header: 'Cost', cell: (f) => inr(f.cost) },
+              { header: 'Odometer', cell: (f) => `${f.odometer} km` },
+              { header: 'Date', cell: (f) => f.date },
+            ]}
+            actions={(f) => (
               <Button
                 variant="ghost"
-                icon={Download}
-                onClick={() =>
-                  exportToCsv(
-                    'fuel-logs.csv',
-                    state.fuelLogs.map((f) => ({
-                      Vehicle: getVehicle(state.vehicles, f.vehicleId)?.regNumber,
-                      Liters: f.liters,
-                      Cost: f.cost,
-                      Odometer: f.odometer,
-                      Date: f.date,
-                    })),
-                  )
-                }
+                onClick={() => dispatch({ type: 'DELETE_FUEL', id: f.id })}
+                title="Delete"
               >
-                Export
+                <Trash2 size={16} />
               </Button>
-            }
+            )}
           />
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500 dark:border-slate-800">
-              <tr>
-                <th className="px-4 py-3">Vehicle</th>
-                <th className="px-4 py-3">Liters</th>
-                <th className="px-4 py-3">Cost</th>
-                <th className="px-4 py-3">Odometer</th>
-                <th className="px-4 py-3">Date</th>
-                <th className="px-4 py-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {state.fuelLogs.length === 0 ? (
-                <EmptyRow colSpan={6} message="No fuel logs." />
-              ) : (
-                state.fuelLogs
-                  .slice()
-                  .reverse()
-                  .map((f) => (
-                    <tr key={f.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                      <td className="px-4 py-3 font-medium">
-                        {getVehicle(state.vehicles, f.vehicleId)?.regNumber || '—'}
-                      </td>
-                      <td className="px-4 py-3">{f.liters} L</td>
-                      <td className="px-4 py-3">{inr(f.cost)}</td>
-                      <td className="px-4 py-3">{f.odometer} km</td>
-                      <td className="px-4 py-3">{f.date}</td>
-                      <td className="px-4 py-3 text-right">
-                        <Button
-                          variant="ghost"
-                          onClick={() => dispatch({ type: 'DELETE_FUEL', id: f.id })}
-                          title="Delete"
-                        >
-                          <Trash2 size={16} />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))
-              )}
-            </tbody>
-          </table>
-        </Panel>
+        </div>
       ) : (
-        <Panel className="overflow-x-auto">
-          <PanelHeader
-            title="Other Expenses"
-            action={
+        <div>
+          <div className="mb-2 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+              Other Expenses
+            </h3>
+            <Button
+              variant="ghost"
+              icon={Download}
+              onClick={() =>
+                exportToCsv(
+                  'expenses.csv',
+                  state.expenses.map((x) => ({
+                    Vehicle: getVehicle(state.vehicles, x.vehicleId)?.regNumber,
+                    Category: x.category,
+                    Amount: x.amount,
+                    Date: x.date,
+                    Note: x.note,
+                  })),
+                )
+              }
+            >
+              Export
+            </Button>
+          </div>
+          <ResponsiveTable
+            rows={state.expenses.slice().reverse()}
+            rowKey={(x) => x.id}
+            empty="No expenses."
+            emptyIcon={Receipt}
+            columns={[
+              {
+                header: 'Vehicle',
+                primary: true,
+                cell: (x) => getVehicle(state.vehicles, x.vehicleId)?.regNumber || '—',
+              },
+              { header: 'Category', cell: (x) => x.category },
+              { header: 'Amount', cell: (x) => inr(x.amount) },
+              { header: 'Date', cell: (x) => x.date },
+              { header: 'Note', cell: (x) => x.note },
+            ]}
+            actions={(x) => (
               <Button
                 variant="ghost"
-                icon={Download}
-                onClick={() =>
-                  exportToCsv(
-                    'expenses.csv',
-                    state.expenses.map((x) => ({
-                      Vehicle: getVehicle(state.vehicles, x.vehicleId)?.regNumber,
-                      Category: x.category,
-                      Amount: x.amount,
-                      Date: x.date,
-                      Note: x.note,
-                    })),
-                  )
-                }
+                onClick={() => dispatch({ type: 'DELETE_EXPENSE', id: x.id })}
+                title="Delete"
               >
-                Export
+                <Trash2 size={16} />
               </Button>
-            }
+            )}
           />
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500 dark:border-slate-800">
-              <tr>
-                <th className="px-4 py-3">Vehicle</th>
-                <th className="px-4 py-3">Category</th>
-                <th className="px-4 py-3">Amount</th>
-                <th className="px-4 py-3">Date</th>
-                <th className="px-4 py-3">Note</th>
-                <th className="px-4 py-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {state.expenses.length === 0 ? (
-                <EmptyRow colSpan={6} message="No expenses." />
-              ) : (
-                state.expenses
-                  .slice()
-                  .reverse()
-                  .map((x) => (
-                    <tr key={x.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                      <td className="px-4 py-3 font-medium">
-                        {getVehicle(state.vehicles, x.vehicleId)?.regNumber || '—'}
-                      </td>
-                      <td className="px-4 py-3">{x.category}</td>
-                      <td className="px-4 py-3">{inr(x.amount)}</td>
-                      <td className="px-4 py-3">{x.date}</td>
-                      <td className="px-4 py-3 text-slate-500 dark:text-slate-400">
-                        {x.note}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <Button
-                          variant="ghost"
-                          onClick={() => dispatch({ type: 'DELETE_EXPENSE', id: x.id })}
-                          title="Delete"
-                        >
-                          <Trash2 size={16} />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))
-              )}
-            </tbody>
-          </table>
-        </Panel>
+        </div>
       )}
 
       {/* Fuel modal */}

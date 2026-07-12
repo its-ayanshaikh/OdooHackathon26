@@ -9,7 +9,7 @@ import {
   seedUsers,
 } from '../data/seed.js'
 
-const STORAGE_KEY = 'transitops-state-v1'
+const STORAGE_KEY = 'transitops-state-v2'
 const AppContext = createContext(null)
 
 const uid = (prefix) => `${prefix}${Date.now()}${Math.floor(Math.random() * 1000)}`

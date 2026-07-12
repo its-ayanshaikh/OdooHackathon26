@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
-import { X } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { X, ChevronRight } from 'lucide-react'
 
 /* ---------------- Status Badge ---------------- */
 const STATUS_STYLES = {
@@ -122,12 +122,14 @@ export function Modal({ open, onClose, title, children, wide = false }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4">
       <div
-        className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"
+        className="animate-fade absolute inset-0 bg-slate-900/50 backdrop-blur-sm"
         onClick={onClose}
       />
       <div
-        className={`relative z-10 w-full ${wide ? 'sm:max-w-3xl' : 'sm:max-w-lg'} max-h-[92vh] overflow-y-auto rounded-t-2xl border border-slate-200 bg-white p-5 shadow-2xl dark:border-slate-800 dark:bg-slate-900 sm:rounded-2xl sm:p-6`}
+        className={`animate-sheet relative z-10 w-full ${wide ? 'sm:max-w-3xl' : 'sm:max-w-lg'} max-h-[92vh] overflow-y-auto rounded-t-2xl border border-slate-200 bg-white p-5 shadow-2xl dark:border-slate-800 dark:bg-slate-900 sm:rounded-2xl sm:p-6`}
       >
+        {/* Grabber for mobile bottom sheet */}
+        <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-slate-300 dark:bg-slate-700 sm:hidden" />
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-lg font-semibold">{title}</h3>
           <button
@@ -235,5 +237,125 @@ export function EmptyRow({ colSpan, message = 'No records found.' }) {
         {message}
       </td>
     </tr>
+  )
+}
+
+export function EmptyState({ message = 'No records found.', icon: Icon }) {
+  return (
+    <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-slate-200 bg-white py-14 text-sm text-slate-400 dark:border-slate-800 dark:bg-slate-900">
+      {Icon && <Icon size={28} strokeWidth={1.5} className="text-slate-300 dark:text-slate-600" />}
+      {message}
+    </div>
+  )
+}
+
+/* ---------------- Responsive table ----------------
+   Desktop: classic table with inline actions.
+   Mobile: compact clickable cards -> tap opens a bottom-sheet with full details + actions.
+   columns: [{ header, cell(row), primary?, secondary?, headerRight?, className? }]
+*/
+export function ResponsiveTable({ columns, rows, rowKey, actions, empty, emptyIcon }) {
+  const [selected, setSelected] = useState(null)
+
+  if (!rows.length) return <EmptyState message={empty} icon={emptyIcon} />
+
+  const primary = columns.find((c) => c.primary)
+  const secondary = columns.find((c) => c.secondary)
+  const headerRight = columns.find((c) => c.headerRight)
+  const detailCols = columns.filter((c) => !c.primary && !c.headerRight)
+
+  return (
+    <>
+      {/* Desktop table */}
+      <Panel className="hidden overflow-hidden md:block">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500 dark:border-slate-800">
+              <tr>
+                {columns.map((c) => (
+                  <th key={c.header} className={`px-4 py-3 font-medium ${c.className || ''}`}>
+                    {c.header}
+                  </th>
+                ))}
+                {actions && <th className="px-4 py-3 text-right font-medium">Actions</th>}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              {rows.map((row) => (
+                <tr key={rowKey(row)} className="transition hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                  {columns.map((c) => (
+                    <td key={c.header} className={`px-4 py-3 ${c.className || ''}`}>
+                      {c.cell(row)}
+                    </td>
+                  ))}
+                  {actions && (
+                    <td className="px-4 py-3">
+                      <div className="flex justify-end gap-1">{actions(row)}</div>
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Panel>
+
+      {/* Mobile compact cards */}
+      <div className="space-y-2.5 md:hidden">
+        {rows.map((row) => (
+          <button
+            key={rowKey(row)}
+            onClick={() => setSelected(row)}
+            className="flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white p-3.5 text-left transition active:scale-[0.99] dark:border-slate-800 dark:bg-slate-900"
+          >
+            <div className="min-w-0 flex-1">
+              {primary && (
+                <div className="truncate text-sm font-semibold text-slate-900 dark:text-white">
+                  {primary.cell(row)}
+                </div>
+              )}
+              {secondary && (
+                <div className="mt-0.5 truncate text-xs text-slate-400">
+                  {secondary.cell(row)}
+                </div>
+              )}
+            </div>
+            {headerRight && <div className="shrink-0">{headerRight.cell(row)}</div>}
+            <ChevronRight size={18} className="shrink-0 text-slate-300 dark:text-slate-600" />
+          </button>
+        ))}
+      </div>
+
+      {/* Mobile detail sheet */}
+      <Modal
+        open={!!selected}
+        onClose={() => setSelected(null)}
+        title={selected && primary ? primary.cell(selected) : 'Details'}
+      >
+        {selected && (
+          <div>
+            {headerRight && <div className="mb-4">{headerRight.cell(selected)}</div>}
+            <dl className="divide-y divide-slate-100 dark:divide-slate-800">
+              {detailCols.map((c) => (
+                <div key={c.header} className="flex items-start justify-between gap-4 py-2.5">
+                  <dt className="text-sm text-slate-400">{c.header}</dt>
+                  <dd className="text-right text-sm font-medium text-slate-700 dark:text-slate-200">
+                    {c.cell(selected)}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            {actions && (
+              <div
+                className="mt-4 flex flex-wrap gap-2 border-t border-slate-100 pt-4 dark:border-slate-800"
+                onClick={() => setSelected(null)}
+              >
+                {actions(selected)}
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
+    </>
   )
 }

@@ -4,18 +4,17 @@ import { useToast } from '../components/Toast.jsx'
 import {
   Badge,
   Button,
-  Panel,
   Field,
   Input,
   Modal,
   PageHeader,
   Select,
   Textarea,
-  EmptyRow,
   FilterBar,
   FilterSelect,
+  ResponsiveTable,
 } from '../components/ui.jsx'
-import { Plus, CircleCheck } from 'lucide-react'
+import { Plus, CircleCheck, Wrench } from 'lucide-react'
 import { getVehicle } from '../store/selectors.js'
 import { inr } from '../utils/format.js'
 
@@ -100,55 +99,33 @@ function Maintenance() {
         </FilterSelect>
       </FilterBar>
 
-      <Panel className="overflow-x-auto">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500 dark:border-slate-800">
-            <tr>
-              <th className="px-4 py-3">Vehicle</th>
-              <th className="px-4 py-3">Type</th>
-              <th className="px-4 py-3">Description</th>
-              <th className="px-4 py-3">Date</th>
-              <th className="px-4 py-3">Cost</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-            {rows.length === 0 ? (
-              <EmptyRow colSpan={7} message="No maintenance records." />
-            ) : (
-              rows.map((m) => {
-                const vehicle = getVehicle(state.vehicles, m.vehicleId)
-                return (
-                  <tr key={m.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                    <td className="px-4 py-3 font-medium">
-                      {vehicle?.regNumber || '—'}
-                    </td>
-                    <td className="px-4 py-3">{m.type}</td>
-                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400">
-                      {m.description}
-                    </td>
-                    <td className="px-4 py-3">{m.date}</td>
-                    <td className="px-4 py-3">{inr(m.cost)}</td>
-                    <td className="px-4 py-3">
-                      <Badge status={m.status} />
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      {m.status === 'Active' ? (
-                        <Button icon={CircleCheck} onClick={() => close(m)}>
-                          Close
-                        </Button>
-                      ) : (
-                        <span className="text-xs text-slate-400">—</span>
-                      )}
-                    </td>
-                  </tr>
-                )
-              })
-            )}
-          </tbody>
-        </table>
-      </Panel>
+      <ResponsiveTable
+        rows={rows}
+        rowKey={(m) => m.id}
+        empty="No maintenance records."
+        emptyIcon={Wrench}
+        columns={[
+          {
+            header: 'Vehicle',
+            primary: true,
+            cell: (m) => getVehicle(state.vehicles, m.vehicleId)?.regNumber || '—',
+          },
+          { header: 'Status', headerRight: true, cell: (m) => <Badge status={m.status} /> },
+          { header: 'Type', secondary: true, cell: (m) => m.type },
+          { header: 'Description', cell: (m) => m.description },
+          { header: 'Date', cell: (m) => m.date },
+          { header: 'Cost', cell: (m) => inr(m.cost) },
+        ]}
+        actions={(m) =>
+          m.status === 'Active' ? (
+            <Button icon={CircleCheck} onClick={() => close(m)}>
+              Close
+            </Button>
+          ) : (
+            <span className="px-2 text-xs text-slate-400">No actions</span>
+          )
+        }
+      />
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Log Maintenance">
         <form onSubmit={create} className="grid grid-cols-2 gap-4">
