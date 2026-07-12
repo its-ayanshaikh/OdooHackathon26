@@ -1,0 +1,19 @@
+@import 'tailwindcss';
+
+/* Enable class-based dark mode (toggle by adding `dark` class on <html>) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  color-scheme: light dark;
+}
+
+html,
+body,
+#root {
+  min-height: 100vh;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+}
