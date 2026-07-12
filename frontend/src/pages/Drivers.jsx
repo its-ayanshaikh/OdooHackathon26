@@ -43,7 +43,7 @@ function ScoreBar({ score }) {
 }
 
 function Drivers() {
-  const { state, dispatch } = useApp()
+  const { state, addDriver, updateDriver, deleteDriver } = useApp()
   const toast = useToast()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
@@ -63,34 +63,33 @@ function Drivers() {
   }
   const setField = (k, v) => setForm((f) => ({ ...f, [k]: v }))
 
-  const save = (e) => {
+  const save = async (e) => {
     e.preventDefault()
     if (!form.name.trim()) return toast.error('Driver name is required.')
     if (!form.licenseExpiry) return toast.error('License expiry date is required.')
-    const dup = state.drivers.some(
-      (d) =>
-        d.licenseNumber.toLowerCase() === form.licenseNumber.trim().toLowerCase() &&
-        d.id !== editing?.id,
-    )
-    if (dup) return toast.error('License number already exists.')
 
     const payload = { ...form, safetyScore: Number(form.safetyScore) }
-    if (editing) {
-      dispatch({ type: 'UPDATE_DRIVER', driver: { ...payload, id: editing.id } })
-      toast.success('Driver updated.')
-    } else {
-      dispatch({ type: 'ADD_DRIVER', driver: payload })
-      toast.success('Driver added.')
+    try {
+      if (editing) {
+        await updateDriver(editing.id, payload)
+        toast.success('Driver updated.')
+      } else {
+        await addDriver(payload)
+        toast.success('Driver added.')
+      }
+      setModalOpen(false)
+    } catch (err) {
+      toast.error(err.message)
     }
-    setModalOpen(false)
   }
 
-  const remove = (d) => {
-    if (d.status === 'On Trip')
-      return toast.error('Cannot delete a driver who is on a trip.')
-    if (window.confirm(`Delete driver ${d.name}?`)) {
-      dispatch({ type: 'DELETE_DRIVER', id: d.id })
+  const remove = async (d) => {
+    if (!window.confirm(`Delete driver ${d.name}?`)) return
+    try {
+      await deleteDriver(d.id)
       toast.info('Driver deleted.')
+    } catch (err) {
+      toast.error(err.message)
     }
   }
 
