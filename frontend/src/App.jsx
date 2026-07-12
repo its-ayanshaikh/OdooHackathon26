@@ -8,29 +8,42 @@ import Trips from './pages/Trips.jsx'
 import Maintenance from './pages/Maintenance.jsx'
 import Expenses from './pages/Expenses.jsx'
 import Reports from './pages/Reports.jsx'
-import { useApp } from './store/AppContext.jsx'
+import { useAuth } from './store/AuthContext.jsx'
 import { canAccess, landingRoute } from './lib/rbac.js'
+import { LogoMark } from './components/Logo.jsx'
+
+function LoadingScreen() {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-slate-50 dark:bg-slate-950">
+      <LogoMark size={44} className="animate-pulse" />
+      <p className="text-sm text-slate-400">Loading TransitOps…</p>
+    </div>
+  )
+}
 
 function RequireAuth({ children }) {
-  const { state } = useApp()
-  if (!state.currentUser) return <Navigate to="/login" replace />
+  const { user, loading } = useAuth()
+  if (loading) return <LoadingScreen />
+  if (!user) return <Navigate to="/login" replace />
   return children
 }
 
 // Guards a route by the current user's role.
 function RoleRoute({ children }) {
-  const { state } = useApp()
+  const { user } = useAuth()
   const location = useLocation()
-  const role = state.currentUser?.role
-  if (!canAccess(role, location.pathname)) {
-    return <Navigate to={landingRoute(role)} replace />
+  if (!canAccess(user?.role, location.pathname)) {
+    return <Navigate to={landingRoute(user?.role)} replace />
   }
   return children
 }
 
-function App() {
-  const { state } = useApp()
+function LandingRedirect() {
+  const { user } = useAuth()
+  return <Navigate to={landingRoute(user?.role)} replace />
+}
 
+function App() {
   return (
     <BrowserRouter>
       <Routes>
@@ -42,12 +55,7 @@ function App() {
             </RequireAuth>
           }
         >
-          <Route
-            path="/"
-            element={
-              <Navigate to={landingRoute(state.currentUser?.role)} replace />
-            }
-          />
+          <Route path="/" element={<LandingRedirect />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route
             path="/vehicles"

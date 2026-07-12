@@ -64,3 +64,39 @@ Desktop.ini
 
 # ---------- Misc ----------
 *.pem
+
+# ---------- Python / Django ----------
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+backend/venv/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+/static/
+
+# Migrations are usually committed; uncomment to ignore
+# */migrations/*.py
+# !*/migrations/__init__.py
+
+# Environment / secrets (Django)
+backend/.env
+.env
+
+# mypy / pytest / coverage
+.mypy_cache/
+.pytest_cache/
+.coverage
+htmlcov/

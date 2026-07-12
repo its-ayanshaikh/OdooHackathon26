@@ -1,30 +1,35 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useApp } from '../store/AppContext.jsx'
+import { useAuth } from '../store/AuthContext.jsx'
 import { useToast } from '../components/Toast.jsx'
 import { LogoMark } from '../components/Logo.jsx'
+import { DEMO_ACCOUNTS, DEMO_PASSWORD } from '../lib/demoAccounts.js'
+import { Loader2 } from 'lucide-react'
 
 function Login() {
   const navigate = useNavigate()
-  const { state, dispatch } = useApp()
+  const { login } = useAuth()
   const toast = useToast()
-  const [email, setEmail] = useState('fleet@transitops.com')
-  const [password, setPassword] = useState('demo1234')
+  const [email, setEmail] = useState('admin@transitops.com')
+  const [password, setPassword] = useState(DEMO_PASSWORD)
+  const [busy, setBusy] = useState(false)
 
-  const login = (user) => {
-    dispatch({ type: 'LOGIN', user })
-    toast.success(`Welcome, ${user.name}`)
-    navigate('/dashboard')
+  const doLogin = async (mail, pass) => {
+    setBusy(true)
+    try {
+      const user = await login(mail, pass)
+      toast.success(`Welcome, ${user.name || user.email}`)
+      navigate('/')
+    } catch (err) {
+      toast.error(err.message || 'Login failed')
+    } finally {
+      setBusy(false)
+    }
   }
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    const user = state.users.find((u) => u.email === email.trim())
-    if (!user) {
-      toast.error('No account found. Try a demo account below.')
-      return
-    }
-    login(user)
+    doLogin(email.trim(), password)
   }
 
   return (
@@ -71,7 +76,7 @@ function Login() {
       {/* Form */}
       <div className="flex w-full items-center justify-center bg-slate-50 p-8 dark:bg-slate-950 lg:w-1/2">
         <div className="w-full max-w-sm">
-          {/* Mobile brand (dark panel is hidden on small screens) */}
+          {/* Mobile brand */}
           <div className="mb-6 flex items-center justify-center gap-2.5 lg:hidden">
             <LogoMark size={34} />
             <span className="text-xl font-semibold text-slate-900 dark:text-white">
@@ -115,8 +120,10 @@ function Login() {
 
             <button
               type="submit"
-              className="w-full rounded-lg bg-amber-500 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-600"
+              disabled={busy}
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-amber-500 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-600 disabled:opacity-60"
             >
+              {busy && <Loader2 size={16} className="animate-spin" />}
               Sign in
             </button>
           </form>
@@ -126,11 +133,12 @@ function Login() {
               Quick demo login (RBAC)
             </p>
             <div className="grid grid-cols-2 gap-2">
-              {state.users.map((u) => (
+              {DEMO_ACCOUNTS.map((u) => (
                 <button
-                  key={u.id}
-                  onClick={() => login(u)}
-                  className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-left text-xs transition hover:border-amber-400 hover:bg-amber-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800"
+                  key={u.email}
+                  disabled={busy}
+                  onClick={() => doLogin(u.email, DEMO_PASSWORD)}
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-left text-xs transition hover:border-amber-400 hover:bg-amber-50 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800"
                 >
                   <span className="block font-semibold text-slate-800 dark:text-slate-100">
                     {u.role}

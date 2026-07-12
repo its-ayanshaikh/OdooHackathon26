@@ -22,7 +22,6 @@ const initialState = {
   fuelLogs: seedFuelLogs,
   expenses: seedExpenses,
   users: seedUsers,
-  currentUser: null,
 }
 
 function loadState() {
@@ -37,12 +36,8 @@ function loadState() {
 
 function reducer(state, action) {
   switch (action.type) {
-    case 'LOGIN':
-      return { ...state, currentUser: action.user }
-    case 'LOGOUT':
-      return { ...state, currentUser: null }
     case 'RESET':
-      return { ...initialState, currentUser: state.currentUser }
+      return { ...initialState }
 
     /* ---------------- Vehicles ---------------- */
     case 'ADD_VEHICLE':
