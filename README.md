@@ -143,6 +143,21 @@ Open the printed URL (default `http://localhost:5173`).
 > (`http://<hostname>:8000/api`). To override, set `VITE_API_URL` in a
 > `frontend/.env` file.
 
+### Google Maps (route search & maps)
+
+Trips use Google Maps for source/destination **Places autocomplete** and a
+themed **route map** (with a “Route” button on each trip). To enable it:
+
+1. Get a Google Maps JavaScript API key with **Places** and **Directions** enabled.
+2. Add it to `frontend/.env`:
+   ```env
+   VITE_GOOGLE_MAPS_API_KEY=your_key_here
+   ```
+3. Restart `npm run dev`.
+
+Without a key the fields still work as plain text inputs and the map shows a
+friendly “add your key” message.
+
 ### Frontend scripts
 
 | Command           | Description                   |

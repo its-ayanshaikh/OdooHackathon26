@@ -21,7 +21,10 @@ import {
   Trash2,
   TriangleAlert,
   Route as RouteIcon,
+  Map as MapIcon,
 } from 'lucide-react'
+import PlacesAutocomplete from '../components/PlacesAutocomplete.jsx'
+import RouteMap from '../components/RouteMap.jsx'
 import { TRIP_STATUS } from '../data/seed.js'
 import {
   dispatchableVehicles,
@@ -51,6 +54,9 @@ function Trips() {
   // Complete-trip modal
   const [completing, setCompleting] = useState(null)
   const [completeForm, setCompleteForm] = useState({ endOdometer: '', fuelConsumed: '' })
+
+  // Route map modal
+  const [routeTrip, setRouteTrip] = useState(null)
 
   const setField = (k, v) => setForm((f) => ({ ...f, [k]: v }))
 
@@ -214,6 +220,14 @@ function Trips() {
         ]}
         actions={(t) => (
           <>
+            <Button
+              variant="secondary"
+              icon={MapIcon}
+              onClick={() => setRouteTrip(t)}
+              title="View route on map"
+            >
+              <span className="hidden sm:inline">Route</span>
+            </Button>
             {t.status === 'Draft' && (
               <>
                 <Button icon={Send} onClick={() => doDispatch(t)}>
@@ -234,9 +248,6 @@ function Trips() {
                 </Button>
               </>
             )}
-            {(t.status === 'Completed' || t.status === 'Cancelled') && (
-              <span className="px-2 text-xs text-slate-400">No actions</span>
-            )}
           </>
         )}
       />
@@ -249,19 +260,29 @@ function Trips() {
       >
         <form onSubmit={create} className="grid grid-cols-2 gap-4">
           <Field label="Source">
-            <Input
+            <PlacesAutocomplete
               value={form.source}
-              onChange={(e) => setField('source', e.target.value)}
-              required
+              onChange={(v) => setField('source', v)}
+              placeholder="Search source location…"
             />
           </Field>
           <Field label="Destination">
-            <Input
+            <PlacesAutocomplete
               value={form.destination}
-              onChange={(e) => setField('destination', e.target.value)}
-              required
+              onChange={(v) => setField('destination', v)}
+              placeholder="Search destination…"
             />
           </Field>
+          {form.source && form.destination && (
+            <div className="col-span-2">
+              <RouteMap
+                origin={form.source}
+                destination={form.destination}
+                height={200}
+                onRoute={(info) => setField('plannedDistance', String(info.km))}
+              />
+            </div>
+          )}
           <div className="col-span-2">
             <Field
               label="Vehicle (Available only)"
@@ -318,7 +339,7 @@ function Trips() {
               required
             />
           </Field>
-          <Field label="Planned Distance (km)">
+          <Field label="Planned Distance (km)" hint="Auto-filled from the map route — editable.">
             <Input
               type="number"
               value={form.plannedDistance}
@@ -399,6 +420,22 @@ function Trips() {
               <Button type="submit">Complete Trip</Button>
             </div>
           </form>
+        )}
+      </Modal>
+
+      {/* Route map modal */}
+      <Modal
+        open={!!routeTrip}
+        onClose={() => setRouteTrip(null)}
+        title={routeTrip ? `${routeTrip.source} → ${routeTrip.destination}` : 'Route'}
+        wide
+      >
+        {routeTrip && (
+          <RouteMap
+            origin={routeTrip.source}
+            destination={routeTrip.destination}
+            height={440}
+          />
         )}
       </Modal>
     </div>
